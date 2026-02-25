@@ -3,98 +3,115 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Team Participation Counter</title>
+  <title>Crit Topics 2026</title>
   <style>
     :root { --bg:#0b0f17; --card:#121a2a; --text:#e8eefc; --muted:#a9b6d3; --line:#24314f; }
     body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
            background: linear-gradient(180deg, #070a10, var(--bg)); color: var(--text); }
     .wrap { max-width: 760px; margin: 40px auto; padding: 0 16px; }
     .card { background: rgba(18,26,42,.92); border: 1px solid rgba(36,49,79,.8);
-            border-radius: 16px; padding: 18px; box-shadow: 0 8px 30px rgba(0,0,0,.35); }
-    h1 { font-size: 18px; margin: 0 0 6px; }
-    .sub { color: var(--muted); font-size: 13px; margin-bottom: 14px; display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
-    .pill { font-size: 12px; padding: 4px 10px; border: 1px solid rgba(36,49,79,.9); border-radius: 999px; background:#0c1322; color: var(--muted); }
+            border-radius: 16px; padding: 20px; box-shadow: 0 8px 30px rgba(0,0,0,.35); }
+
+    h1 { font-size: 22px; margin: 0 0 6px; }
+    .sub { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
+
     .row { display: grid; grid-template-columns: 1fr auto; gap: 12px;
-           padding: 12px 0; border-top: 1px solid rgba(36,49,79,.65); }
+           padding: 14px 0; border-top: 1px solid rgba(36,49,79,.65); }
     .row:first-of-type { border-top: 0; }
-    .name { font-weight: 600; }
+
+    .name { font-weight: 600; font-size: 16px; }
     .meta { color: var(--muted); font-size: 12px; margin-top: 4px; }
+
     .controls { display: flex; align-items: center; gap: 10px; }
-    button { width: 38px; height: 38px; border-radius: 10px; border: 1px solid rgba(36,49,79,.9);
-             background: #0c1322; color: var(--text); font-size: 18px; cursor: pointer; }
-    button:hover { filter: brightness(1.15); }
-    button:active { transform: translateY(1px); }
-    button:disabled { opacity: .5; cursor: not-allowed; }
-    .count { min-width: 22px; text-align: center; font-variant-numeric: tabular-nums; font-weight: 700; }
-    .bar { height: 10px; border-radius: 999px; background: rgba(36,49,79,.6); overflow: hidden;
-           border: 1px solid rgba(36,49,79,.9); margin-top: 8px; }
-    .fill { height: 100%; width: 0%; background: linear-gradient(90deg, #6aa8ff, #7cf0ff); }
-    .footer { display:flex; gap:10px; flex-wrap:wrap; margin-top: 14px; }
-    .smallbtn { width: auto; padding: 10px 12px; font-size: 13px; border-radius: 12px; }
-    .hint { color: var(--muted); font-size: 12px; margin-top: 10px; line-height: 1.35; }
-    code { background: rgba(255,255,255,.06); padding: 2px 6px; border-radius: 8px; }
+
+    button { width: 38px; height: 38px; border-radius: 10px;
+             border: 1px solid rgba(36,49,79,.9);
+             background: #0c1322; color: var(--text);
+             font-size: 18px; cursor: pointer; }
+    button:hover { filter: brightness(1.2); }
+
+    .count {
+      min-width: 26px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    .count.over {
+      color: #4cff9a;
+      text-shadow: 0 0 6px rgba(76,255,154,.6);
+    }
+
+    .bar {
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(36,49,79,.6);
+      overflow: hidden;
+      border: 1px solid rgba(36,49,79,.9);
+      margin-top: 8px;
+    }
+
+    .fill {
+      height: 100%;
+      width: 0%;
+      transition: width .25s ease, background .25s ease;
+      background: linear-gradient(90deg, #6aa8ff, #7cf0ff);
+    }
+
+    .fill.over {
+      background: linear-gradient(90deg, #f7d046, #4cff9a);
+      box-shadow: 0 0 8px rgba(76,255,154,.6);
+    }
+
+    .footer { margin-top: 18px; display:flex; gap:10px; flex-wrap:wrap; }
+    .smallbtn { width:auto; padding:10px 14px; font-size:13px; border-radius:12px; }
+
+    .status { font-size:12px; color:var(--muted); margin-left:8px; }
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
-      <h1>Team Participation Counter</h1>
+      <h1>Crit Topics 2026: What's Your Count?</h1>
       <div class="sub">
-        <span>Goal: <span id="goalText"></span> each</span>
-        <span class="pill" id="status">Connecting…</span>
+        Goal: 10 topics per person
+        <span class="status" id="status">Connecting...</span>
       </div>
 
       <div id="list"></div>
 
       <div class="footer">
-        <button class="smallbtn" id="reset">Reset all to 0</button>
-        <button class="smallbtn" id="copy">Copy summary</button>
+        <button class="smallbtn" id="reset">Reset All</button>
         <button class="smallbtn" id="refresh">Refresh</button>
-      </div>
-
-      <div class="hint">
-        Shared counts stored in Supabase row <code>participation.id = 'team'</code>.
-        If multiple people click at the same time, refresh to see the latest.
       </div>
     </div>
   </div>
 
-  <!-- Supabase JS (CDN) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <script>
-    // 1) Set these two values from Supabase Settings → API
-const SUPABASE_URL = "https://ebjfgetbzfyiudqdysmo.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_eDX4wM6uXn0-fU0nO9emIw_Er1pLO1a";
+    const SUPABASE_URL = "https://ebjfgetbzfyiudqdysmo.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_eDX4wM6uXn0-fU0nO9emIw_Er1pLO1a";
 
-    // 2) Your app settings
     const GOAL = 10;
     const NAMES = ["Amal", "Billy", "Imani", "Sam", "Sissi"];
     const ROW_ID = "team";
 
-    const statusEl = document.getElementById("status");
-    const list = document.getElementById("list");
-    document.getElementById("goalText").textContent = GOAL;
-
-    function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
-
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    let counts = Object.fromEntries(NAMES.map(n => [n, 0]));
-    let busy = false;
+    let counts = {};
+    const list = document.getElementById("list");
+    const statusEl = document.getElementById("status");
 
-    function setStatus(text) { statusEl.textContent = text; }
+    function setStatus(t){ statusEl.textContent = t; }
 
-    function setBusy(v) {
-      busy = v;
-      document.querySelectorAll("button").forEach(b => b.disabled = v);
-    }
+    function clampMin(v){ return Math.max(0, v); }
 
-    function render() {
+    function render(){
       list.innerHTML = "";
-      NAMES.forEach(name => {
+      NAMES.forEach(name=>{
         const value = Number(counts[name] ?? 0);
-        const pct = clamp((value / GOAL) * 100, 0, 100);
+        const pct = Math.min((value / GOAL) * 100, 100);
+        const over = value > GOAL;
 
         const row = document.createElement("div");
         row.className = "row";
@@ -102,8 +119,10 @@ const SUPABASE_ANON_KEY = "sb_publishable_eDX4wM6uXn0-fU0nO9emIw_Er1pLO1a";
         const left = document.createElement("div");
         left.innerHTML = `
           <div class="name">${name}</div>
-          <div class="meta">${value}/${GOAL}</div>
-          <div class="bar"><div class="fill" style="width:${pct}%"></div></div>
+          <div class="meta">${value} topics</div>
+          <div class="bar">
+            <div class="fill ${over ? "over" : ""}" style="width:${pct}%"></div>
+          </div>
         `;
 
         const controls = document.createElement("div");
@@ -111,15 +130,15 @@ const SUPABASE_ANON_KEY = "sb_publishable_eDX4wM6uXn0-fU0nO9emIw_Er1pLO1a";
 
         const minus = document.createElement("button");
         minus.textContent = "−";
-        minus.onclick = () => updateName(name, -1);
+        minus.onclick = ()=> update(name, -1);
 
         const countEl = document.createElement("div");
-        countEl.className = "count";
+        countEl.className = "count " + (over ? "over" : "");
         countEl.textContent = value;
 
         const plus = document.createElement("button");
         plus.textContent = "+";
-        plus.onclick = () => updateName(name, +1);
+        plus.onclick = ()=> update(name, +1);
 
         controls.appendChild(minus);
         controls.appendChild(countEl);
@@ -131,95 +150,47 @@ const SUPABASE_ANON_KEY = "sb_publishable_eDX4wM6uXn0-fU0nO9emIw_Er1pLO1a";
       });
     }
 
-    async function fetchCounts() {
-      setStatus("Loading…");
-      const { data, error } = await supabaseClient
+    async function fetchCounts(){
+      setStatus("Loading...");
+      const { data } = await supabaseClient
         .from("participation")
-        .select("counts, updated_at")
+        .select("counts")
         .eq("id", ROW_ID)
         .single();
 
-      if (error) {
-        console.error(error);
-        setStatus("Error loading");
-        return;
-      }
-
-      const incoming = data?.counts || {};
-      counts = Object.fromEntries(NAMES.map(n => [n, Number(incoming?.[n] ?? 0)]));
+      counts = data?.counts || {};
+      render();
       setStatus("Live");
+    }
+
+    async function update(name, delta){
+      const next = { ...counts };
+      next[name] = clampMin((next[name] ?? 0) + delta);
+
+      await supabaseClient
+        .from("participation")
+        .update({ counts: next })
+        .eq("id", ROW_ID);
+
+      counts = next;
       render();
     }
 
-    async function writeCounts(newCounts) {
-      const payload = {};
-      NAMES.forEach(n => payload[n] = Number(newCounts[n] ?? 0));
+    document.getElementById("reset").onclick = async ()=>{
+      const zero = {};
+      NAMES.forEach(n=> zero[n]=0);
 
-      const { error } = await supabaseClient
+      await supabaseClient
         .from("participation")
-        .update({ counts: payload, updated_at: new Date().toISOString() })
+        .update({ counts: zero })
         .eq("id", ROW_ID);
 
-      if (error) throw error;
-    }
-
-    async function updateName(name, delta) {
-      if (busy) return;
-      try {
-        setBusy(true);
-        setStatus("Saving…");
-
-        const next = { ...counts };
-        next[name] = clamp(Number(next[name] ?? 0) + delta, 0, GOAL);
-
-        await writeCounts(next);
-        counts = next;
-
-        setStatus("Live");
-        render();
-      } catch (e) {
-        console.error(e);
-        setStatus("Save failed");
-        alert("Couldn’t save to Supabase. Check RLS policies and your URL/key.");
-      } finally {
-        setBusy(false);
-      }
-    }
-
-    document.getElementById("reset").onclick = async () => {
-      if (busy) return;
-      try {
-        setBusy(true);
-        setStatus("Resetting…");
-        const zero = Object.fromEntries(NAMES.map(n => [n, 0]));
-        await writeCounts(zero);
-        counts = zero;
-        setStatus("Live");
-        render();
-      } catch (e) {
-        console.error(e);
-        setStatus("Reset failed");
-        alert("Reset failed. Check Supabase policies.");
-      } finally {
-        setBusy(false);
-      }
+      counts = zero;
+      render();
     };
 
-    document.getElementById("copy").onclick = async () => {
-      const lines = NAMES.map(n => `${n}: ${counts[n] ?? 0}/${GOAL}`);
-      const text = `Participation (${new Date().toLocaleDateString()}):\n` + lines.join("\n");
-      try {
-        await navigator.clipboard.writeText(text);
-        alert("Copied summary!");
-      } catch {
-        prompt("Copy this summary:", text);
-      }
-    };
+    document.getElementById("refresh").onclick = fetchCounts;
 
-    document.getElementById("refresh").onclick = () => fetchCounts();
-
-    // Initial load
-    render();
     fetchCounts();
   </script>
 </body>
